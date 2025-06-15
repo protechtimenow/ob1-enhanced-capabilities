@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OB-1 Command Center</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🚀 OB-1 SuperStacks</h1>
+      <div class="status-indicator" id="connectionStatus">
+        <span class="dot"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </header>
+    
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-value" id="totalPoints">242.7M</div>
+        <div class="metric-label">Total Points</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-value" id="ecosystemShare">9.06%</div>
+        <div class="metric-label">Ecosystem Share</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-value" id="chainDominance">80.8%</div>
+        <div class="metric-label">Unichain Dom.</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-value" id="competitive">6.4x</div>
+        <div class="metric-label">Advantage</div>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button class="action-btn primary" id="openDashboard">
+        📊 Open Dashboard
+      </button>
+      
+      <button class="action-btn secondary" id="refreshData">
+        🔄 Refresh
+      </button>
+      
+      <button class="action-btn quantum" id="quantumAnalysis">
+        ⚡ Quantum Analysis
+      </button>
+    </div>
+    
+    <div class="quick-info">
+      <div class="info-item">
+        <span class="label">Protocol:</span>
+        <span class="value">Uniswap V4</span>
+      </div>
+      
+      <div class="info-item">
+        <span class="label">Chain:</span>
+        <span class="value">Unichain (100%)</span>
+      </div>
+      
+      <div class="info-item">
+        <span class="label">Position:</span>
+        <span class="value">Top 5 Participant</span>
+      </div>
+    </div>
+    
+    <div class="codespace-actions">
+      <button class="action-btn codespace" id="injectOB1">
+        🧠 Inject OB-1 into Codespace
+      </button>
+      
+      <button class="action-btn codespace" id="openCodespace">
+        💻 Open Codespace
+      </button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
