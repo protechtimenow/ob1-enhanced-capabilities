@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Quantum animated background */
+.quantum-bg {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Glowing effects for quantum elements */
+.quantum-glow {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.quantum-glow:hover {
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+}
+
+/* Loading animations */
+.pulse-quantum {
+  animation: pulse-quantum 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-quantum {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Chart container styles */
+.chart-container {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Status indicators */
+.status-active {
+  color: #10B981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.status-warning {
+  color: #F59E0B;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.status-error {
+  color: #EF4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
