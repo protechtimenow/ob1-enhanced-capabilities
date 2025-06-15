@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ob1-copilot-toolkit": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {},
+      "disabled": false
+    }
+  }
+}
