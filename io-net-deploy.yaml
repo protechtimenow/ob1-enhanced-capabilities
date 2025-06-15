@@ -1,0 +1,237 @@
+# IO.NET Container Engine Deployment Configuration
+# OB-1 Enhanced Capabilities - AI Orchestration Service
+
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: ob1-enhanced-capabilities
+  labels:
+    app: ob1-enhanced
+    version: v1.0.0
+    environment: production
+
+spec:
+  # Container Configuration
+  container:
+    image: ob1-enhanced:latest
+    ports:
+      - containerPort: 5000
+        protocol: TCP
+        name: http
+    
+    # Resource Requirements
+    resources:
+      requests:
+        cpu: "1000m"     # 1 CPU core minimum
+        memory: "2Gi"    # 2GB RAM minimum
+        storage: "5Gi"   # 5GB storage minimum
+      limits:
+        cpu: "2000m"     # 2 CPU cores maximum
+        memory: "4Gi"    # 4GB RAM maximum
+        storage: "10Gi"  # 10GB storage maximum
+
+    # Environment Variables
+    env:
+      - name: FLASK_ENV
+        value: "production"
+      - name: PORT
+        value: "5000"
+      - name: PYTHONPATH
+        value: "/app"
+      - name: WORKERS
+        value: "2"
+      - name: TIMEOUT
+        value: "120"
+      - name: KEEP_ALIVE
+        value: "2"
+      - name: MAX_REQUESTS
+        value: "1000"
+      - name: MAX_REQUESTS_JITTER
+        value: "100"
+      # Secrets (configure these in IO.NET dashboard)
+      - name: GITHUB_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: ob1-secrets
+            key: github-token
+      - name: GITHUB_WEBHOOK_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: ob1-secrets
+            key: webhook-secret
+            optional: true
+
+    # Health Checks
+    healthCheck:
+      httpGet:
+        path: /health
+        port: 5000
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+
+    # Readiness Probe
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 5000
+        scheme: HTTP
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+
+    # Liveness Probe
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 5000
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 60
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 5
+
+  # Scaling Configuration
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  # Auto-scaling (if supported)
+  autoScaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  # Networking
+  service:
+    type: LoadBalancer
+    ports:
+      - port: 80
+        targetPort: 5000
+        protocol: TCP
+        name: http
+    
+    # IO.NET specific annotations
+    annotations:
+      ionet.ai/public-access: "true"
+      ionet.ai/load-balancer: "enabled"
+      ionet.ai/ssl-redirect: "true"
+
+  # Storage (if persistent storage needed)
+  storage:
+    - name: app-logs
+      mountPath: /app/logs
+      size: 1Gi
+      accessMode: ReadWriteOnce
+    - name: temp-storage
+      mountPath: /tmp
+      size: 2Gi
+      accessMode: ReadWriteOnce
+
+  # Security Context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+
+  # Restart Policy
+  restartPolicy: Always
+
+---
+# Secrets Configuration (create these in IO.NET dashboard)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ob1-secrets
+type: Opaque
+stringData:
+  github-token: "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  # Replace with actual token
+  webhook-secret: "your-webhook-secret-here"  # Optional webhook secret
+
+---
+# ConfigMap for additional configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ob1-config
+data:
+  config.yaml: |
+    ai_engines:
+      ob1:
+        enabled: true
+        priority: 1
+        timeout: 30
+      copilot:
+        enabled: true
+        priority: 2
+        timeout: 30
+      r2d2:
+        enabled: false
+        priority: 3
+        timeout: 60
+
+    server:
+      host: "0.0.0.0"
+      port: 5000
+      workers: 2
+      timeout: 120
+      keepalive: 2
+      max_requests: 1000
+      max_requests_jitter: 100
+
+    logging:
+      level: INFO
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      
+    security:
+      rate_limit_per_minute: 60
+      cors_origins: ["*"]
+      max_request_size: "16MB"
+      
+    analytics:
+      enabled: true
+      retain_days: 30
+
+---
+# IO.NET Ingress Configuration
+apiVersion: v1
+kind: Ingress
+metadata:
+  name: ob1-enhanced-ingress
+  annotations:
+    ionet.ai/certificate-issuer: "letsencrypt"
+    ionet.ai/redirect-to-https: "true"
+    ionet.ai/rate-limit: "1000/minute"
+spec:
+  rules:
+    - host: ob1-enhanced.ionet.ai  # This will be provided by IO.NET
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ob1-enhanced-capabilities
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - ob1-enhanced.ionet.ai
+      secretName: ob1-enhanced-tls
