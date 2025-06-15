@@ -1,0 +1,71 @@
+# OB-1 + GitHub Copilot Bridge MCP Dependencies
+# Quantum-enhanced blockchain development requirements
+
+# Core async and HTTP libraries
+aiohttp>=3.8.0
+aiofiles>=22.1.0
+websockets>=10.4
+
+# Database and caching
+sqlite3-utils>=3.34.0
+redis>=4.5.0
+
+# API and networking
+requests>=2.28.0
+httpx>=0.24.0
+websockets>=10.4
+
+# Async utilities
+asyncio-mqtt>=0.11.1
+aioredis>=2.0.1
+
+# CLI and utilities
+click>=8.1.0
+rich>=13.0.0
+typer>=0.7.0
+
+# Configuration and environment
+python-dotenv>=0.19.2
+pydantic>=1.10.0
+PyYAML>=6.0
+
+# Cryptography and security
+cryptography>=38.0.0
+PyJWT>=2.6.0
+
+# Blockchain and web3
+web3>=6.0.0
+eth-account>=0.8.0
+eth-utils>=2.0.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+json5>=0.9.0
+
+# Logging and monitoring
+structlog>=22.3.0
+prometheus-client>=0.15.0
+
+# Testing (optional)
+pytest>=7.2.0
+pytest-asyncio>=0.20.0
+responses>=0.22.0
+
+# Development tools (optional)
+black>=22.10.0
+isort>=5.11.0
+flake8>=6.0.0
+mypy>=0.991
+
+# GitHub and Git integration
+PyGithub>=1.57
+gitpython>=3.1.29
+
+# Model Context Protocol
+mcp>=0.1.0
+
+# Additional utilities
+dateutils>=0.6.12
+humanize>=4.4.0
+tabulate>=0.9.0
