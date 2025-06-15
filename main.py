@@ -1,5 +1,3 @@
-python
-
 from flask import Flask, request, jsonify
 import yaml
 import os
