@@ -1,0 +1,202 @@
+apiVersion: io.net/v1alpha1
+kind: QuantumDeployment
+metadata:
+  name: ob1-enhanced-quantum-network
+  labels:
+    app: ob1-enhanced
+    tier: quantum
+    version: "1.0"
+spec:
+  quantumProtocol:
+    enabled: true
+    mode: "quadundrumise"
+    entanglement:
+      enabled: true
+      pairs:
+        - agent1: "analytics-agent"
+          agent2: "prediction-agent"
+        - agent1: "bridge-agent" 
+          agent2: "operations-agent"
+    superposition:
+      enabled: true
+      states: ["defi-analysis", "cross-chain", "governance", "monitoring"]
+    coherenceTime: "300s"
+    decoherenceProtection: true
+  
+  agents:
+    replicas: 4
+    template:
+      metadata:
+        labels:
+          component: quantum-agent
+      spec:
+        containers:
+        - name: quantum-agent
+          image: ob1/quantum-agent:latest
+          resources:
+            requests:
+              gpu.io.net/gpu: "1"
+              cpu: "2"
+              memory: "8Gi"
+            limits:
+              gpu.io.net/gpu: "1" 
+              cpu: "4"
+              memory: "16Gi"
+          env:
+          - name: QUANTUM_MODE
+            value: "quadundrumise"
+          - name: AGENT_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: CONTROLLER_WALLET
+            value: "0x21cC30462B8392Aa250453704019800092a16165"
+          - name: BACKEND_URL
+            value: "https://ob1-enhanced.railway.app"
+          - name: IO_NET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: io-net-secrets
+                key: token
+          ports:
+          - containerPort: 8080
+            name: quantum-api
+          - containerPort: 8081
+            name: entanglement
+          volumeMounts:
+          - name: quantum-data
+            mountPath: /quantum/data
+        volumes:
+        - name: quantum-data
+          emptyDir:
+            sizeLimit: "10Gi"
+        
+        nodeSelector:
+          io.net/gpu-type: "a100"
+          io.net/region: "global"
+        
+        tolerations:
+        - key: "io.net/quantum"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+  networking:
+    entanglementNetwork:
+      enabled: true
+      topology: "mesh"
+      encryption: "quantum-resistant"
+    loadBalancer:
+      enabled: true
+      type: "global"
+      ports:
+      - port: 80
+        targetPort: 8080
+        protocol: TCP
+        name: quantum-api
+      - port: 443
+        targetPort: 8080
+        protocol: TCP
+        name: quantum-api-tls
+
+  storage:
+    quantumDataPersistence:
+      enabled: true
+      storageClass: "io-net-fast-ssd"
+      size: "100Gi"
+    replicationFactor: 3
+    
+  monitoring:
+    metrics:
+      enabled: true
+      endpoints:
+      - path: /metrics
+        port: 8080
+      - path: /quantum-metrics
+        port: 8081
+    alerts:
+      decoherenceThreshold: "0.1"
+      entanglementFidelity: "0.95"
+      agentResponseTime: "100ms"
+
+  scaling:
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 16
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 70
+      - type: Resource  
+        resource:
+          name: gpu.io.net/gpu
+          target:
+            type: Utilization
+            averageUtilization: 80
+      - type: Pods
+        pods:
+          metric:
+            name: quantum_coherence
+          target:
+            type: AverageValue
+            averageValue: "0.9"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: io-net-secrets
+type: Opaque
+stringData:
+  token: "${IO_NET_API_TOKEN}"
+  controller-key: "0x21cC30462B8392Aa250453704019800092a16165"
+  backend-url: "https://ob1-enhanced.railway.app"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quantum-config
+data:
+  quantum-protocol.yaml: |
+    protocol:
+      version: "1.0"
+      mode: "quadundrumise"
+      features:
+        superposition:
+          enabled: true
+          parallel_states: 4
+        entanglement:
+          enabled: true
+          sync_latency: "< 1ms"
+        tunneling:
+          enabled: true
+          bypass_limits: true
+        decoherence_protection:
+          enabled: true
+          error_correction: "quantum-ldpc"
+      
+    agents:
+      analytics:
+        priority: "high"
+        gpu_allocation: "exclusive"
+        quantum_ops: ["superposition_analysis", "pattern_recognition"]
+      
+      prediction:
+        priority: "high" 
+        gpu_allocation: "shared"
+        quantum_ops: ["temporal_modeling", "probability_computation"]
+        
+      bridge:
+        priority: "medium"
+        gpu_allocation: "shared"
+        quantum_ops: ["cross_chain_sync", "state_bridging"]
+        
+      operations:
+        priority: "medium"
+        gpu_allocation: "minimal"
+        quantum_ops: ["system_monitoring", "health_checks"]
