@@ -1,0 +1,133 @@
+{
+  "mcpServers": {
+    "superchain": {
+      "command": "python",
+      "args": ["superchain_mcp_server.py"],
+      "env": {
+        "SUPERCHAIN_DATA": "enabled",
+        "LOG_LEVEL": "INFO"
+      }
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run", 
+        "--rm", 
+        "-e", "GITHUB_TOKEN=${GITHUB_TOKEN}",
+        "mcp/github"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "postgresql": {
+      "command": "docker",
+      "args": ["run", "--rm", "mcp/postgresql"],
+      "env": {}
+    },
+    "stripe": {
+      "command": "docker", 
+      "args": [
+        "run",
+        "--rm", 
+        "-e", "STRIPE_API_KEY=${STRIPE_API_KEY}",
+        "mcp/stripe"
+      ],
+      "env": {
+        "STRIPE_API_KEY": "${STRIPE_API_KEY}"
+      }
+    },
+    "elasticsearch": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-e", "ELASTICSEARCH_URL=${ELASTICSEARCH_URL}",
+        "mcp/elasticsearch"
+      ],
+      "env": {
+        "ELASTICSEARCH_URL": "${ELASTICSEARCH_URL}"
+      }
+    },
+    "mongodb": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm", 
+        "-e", "MONGODB_URI=${MONGODB_URI}",
+        "mcp/mongodb"
+      ],
+      "env": {
+        "MONGODB_URI": "${MONGODB_URI}"
+      }
+    },
+    "neo4j": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-e", "NEO4J_URI=${NEO4J_URI}",
+        "-e", "NEO4J_USERNAME=${NEO4J_USERNAME}", 
+        "-e", "NEO4J_PASSWORD=${NEO4J_PASSWORD}",
+        "mcp/neo4j"
+      ],
+      "env": {
+        "NEO4J_URI": "${NEO4J_URI}",
+        "NEO4J_USERNAME": "${NEO4J_USERNAME}",
+        "NEO4J_PASSWORD": "${NEO4J_PASSWORD}"
+      }
+    },
+    "playwright": {
+      "command": "docker",
+      "args": ["run", "--rm", "mcp/playwright"],
+      "env": {}
+    },
+    "wikipedia": {
+      "command": "docker", 
+      "args": ["run", "--rm", "mcp/wikipedia-mcp"],
+      "env": {}
+    },
+    "kubernetes": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-e", "KUBECONFIG=${KUBECONFIG}",
+        "mcp/kubernetes"
+      ],
+      "env": {
+        "KUBECONFIG": "${KUBECONFIG}"
+      }
+    }
+  },
+  "clientConfig": {
+    "requestTimeoutMs": 30000,
+    "maxRetries": 3,
+    "logLevel": "info"
+  },
+  "security": {
+    "allowedHosts": ["localhost", "127.0.0.1"],
+    "requireAuthentication": true,
+    "rateLimiting": {
+      "enabled": true,
+      "maxRequestsPerMinute": 60
+    }
+  },
+  "superchainIntegration": {
+    "enabled": true,
+    "walletAddress": "0x21cC30462B8392Aa250453704019800092a16165",
+    "features": {
+      "realTimeAnalytics": true,
+      "performanceForecasting": true,
+      "strategyOptimization": true,
+      "marketComparison": true,
+      "riskAssessment": true
+    },
+    "dataSources": [
+      "hourly_points",
+      "tvl_tracking", 
+      "protocol_performance",
+      "ecosystem_metrics"
+    ]
+  }
+}
