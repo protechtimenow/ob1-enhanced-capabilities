@@ -1,0 +1,42 @@
+# GitHub App Configuration for OB-1 Enhanced Capabilities
+name: "OB-1 Enhanced AI Capabilities"
+description: "Powerful AI-driven blockchain development assistant for GitHub repositories"
+url: "https://your-app-domain.com"
+setup_url: "https://your-app-domain.com/setup"
+
+# GitHub App Permissions
+default_permissions:
+  # Repository permissions
+  contents: read
+  issues: write
+  metadata: read
+  pull_requests: write
+  repository_hooks: read
+  
+  # Organization permissions
+  members: read
+
+# Events the app subscribes to
+default_events:
+  - issues
+  - pull_request
+  - push
+  - installation
+  - installation_repositories
+
+# App features
+public: true
+request_oauth_on_install: false
+
+# Webhook settings
+webhook_active: true
+webhook_events:
+  - issues
+  - pull_request
+  - push
+  - installation
+
+# App icon and branding
+# You'll need to upload these through the GitHub App settings
+# icon: "path/to/icon.png"
+# logo: "path/to/logo.png"
