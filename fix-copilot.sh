@@ -1,325 +1,254 @@
 #!/bin/bash
 
-# 🤖 GitHub Copilot Fix Script for Codespace
-# Resolves common Copilot issues in GitHub Codespaces
-
-set -e
+echo "🤖 Fixing GitHub Copilot in VS Code Codespace"
+echo "============================================"
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+NC='\033[0m' # No Color
 
-# Banner
-echo -e "${BLUE}
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                    🤖 GitHub Copilot Fix for Codespace                       ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-${NC}"
-
-print_step() {
-    echo -e "${CYAN}[STEP]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+print_status() {
+    echo -e "${GREEN}✅ $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}⚠️  $1${NC}"
 }
 
-# Step 1: Check GitHub authentication
-print_step "Checking GitHub authentication..."
-if command -v gh &> /dev/null; then
-    if gh auth status | grep -q "Logged in"; then
-        print_success "GitHub CLI authentication confirmed"
-    else
-        print_error "GitHub CLI not authenticated"
-        echo "Run: gh auth login"
-        exit 1
-    fi
+print_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+print_header() {
+    echo -e "${BLUE}🔧 $1${NC}"
+}
+
+# Step 1: Check if we're in a codespace
+print_header "Checking Environment"
+if [ -n "$CODESPACE_NAME" ]; then
+    print_status "Running in GitHub Codespace: $CODESPACE_NAME"
 else
-    print_warning "GitHub CLI not installed"
+    print_warning "Not in a GitHub Codespace - some features may not work"
 fi
 
-# Step 2: Install VS Code extensions via command line
-print_step "Installing GitHub Copilot extensions..."
-
-# Extension IDs
-COPILOT_EXTENSION="GitHub.copilot"
-COPILOT_CHAT_EXTENSION="GitHub.copilot-chat"
-
-# Install extensions
-print_step "Installing GitHub Copilot extension..."
+# Step 2: Check VS Code installation
+print_header "Checking VS Code"
 if command -v code &> /dev/null; then
-    code --install-extension $COPILOT_EXTENSION --force
-    if [ $? -eq 0 ]; then
-        print_success "GitHub Copilot extension installed"
-    else
-        print_warning "Failed to install Copilot extension via CLI"
-    fi
-    
-    code --install-extension $COPILOT_CHAT_EXTENSION --force
-    if [ $? -eq 0 ]; then
-        print_success "GitHub Copilot Chat extension installed"
-    else
-        print_warning "Failed to install Copilot Chat extension via CLI"
-    fi
+    print_status "VS Code CLI found"
 else
-    print_warning "VS Code CLI not available"
+    print_warning "VS Code CLI not found - installing..."
+    curl -fsSL https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64 | tar -xz -C /tmp
+    sudo mv /tmp/code /usr/local/bin/
 fi
 
-# Step 3: Create VS Code settings for Copilot
-print_step "Configuring VS Code settings for Copilot..."
-mkdir -p .vscode
+# Step 3: Install Copilot extensions
+print_header "Installing GitHub Copilot Extensions"
 
-# Enhanced VS Code settings
-cat > .vscode/settings.json << 'EOF'
+# Install main Copilot extension
+print_info "Installing GitHub Copilot..."
+code --install-extension GitHub.copilot --force
+if [ $? -eq 0 ]; then
+    print_status "GitHub Copilot extension installed"
+else
+    print_error "Failed to install GitHub Copilot extension"
+fi
+
+# Install Copilot Chat extension
+print_info "Installing GitHub Copilot Chat..."
+code --install-extension GitHub.copilot-chat --force
+if [ $? -eq 0 ]; then
+    print_status "GitHub Copilot Chat extension installed"
+else
+    print_error "Failed to install GitHub Copilot Chat extension"
+fi
+
+# Step 4: Check GitHub authentication
+print_header "Checking GitHub Authentication"
+if command -v gh &> /dev/null; then
+    gh_status=$(gh auth status 2>&1)
+    if echo "$gh_status" | grep -q "Logged in"; then
+        print_status "GitHub CLI authenticated"
+        echo "$gh_status"
+    else
+        print_warning "GitHub CLI not authenticated"
+        print_info "Run: gh auth login"
+    fi
+else
+    print_warning "GitHub CLI not found"
+fi
+
+# Step 5: Create VS Code settings for Copilot
+print_header "Configuring VS Code Settings"
+VSCODE_SETTINGS_DIR="$HOME/.vscode-server/data/Machine"
+mkdir -p "$VSCODE_SETTINGS_DIR"
+
+# Create settings.json if it doesn't exist
+SETTINGS_FILE="$VSCODE_SETTINGS_DIR/settings.json"
+if [ ! -f "$SETTINGS_FILE" ]; then
+    print_info "Creating VS Code settings.json..."
+    cat > "$SETTINGS_FILE" << 'EOF'
 {
-    "python.defaultInterpreterPath": "/usr/bin/python3",
-    "python.terminal.activateEnvironment": true,
     "github.copilot.enable": {
         "*": true,
+        "yaml": true,
         "plaintext": true,
         "markdown": true,
-        "scminput": false,
-        "python": true,
         "javascript": true,
         "typescript": true,
+        "python": true,
+        "json": true,
+        "jsonc": true,
+        "html": true,
+        "css": true,
+        "scss": true,
+        "less": true,
+        "vue": true,
+        "jsx": true,
+        "tsx": true,
+        "php": true,
         "go": true,
-        "rust": true
+        "rust": true,
+        "java": true,
+        "c": true,
+        "cpp": true,
+        "csharp": true,
+        "ruby": true,
+        "shellscript": true,
+        "sql": true,
+        "dockerfile": true,
+        "solidity": true
     },
     "github.copilot.advanced": {
-        "debug.overrideEngine": "codex",
+        "debug.overrideEngine": "copilot-codex",
         "debug.testOverrideProxyUrl": "",
-        "debug.overrideProxyUrl": ""
+        "debug.overrideProxyUrl": "",
+        "debug.filterLogCategories": []
     },
-    "github.copilot-chat.enable": {
-        "*": true
-    },
-    "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${workspaceFolder}"
-    },
-    "files.autoSave": "afterDelay",
-    "editor.inlineSuggest.enabled": true,
-    "editor.suggest.preview": true
+    "github.copilot.chat.enabled": true,
+    "github.copilot.chat.welcomeMessage": "enabled",
+    "workbench.editorAssociations": {
+        "*.md": "vscode.markdown.preview.editor"
+    }
 }
 EOF
+    print_status "VS Code settings.json created"
+else
+    print_info "VS Code settings.json already exists"
+fi
 
-# Enhanced extensions recommendations
-cat > .vscode/extensions.json << 'EOF'
-{
-    "recommendations": [
-        "github.copilot",
-        "github.copilot-chat",
-        "ms-python.python",
-        "ms-python.pylint",
-        "ms-python.flake8",
-        "ms-python.black-formatter",
-        "ms-vscode.vscode-json",
-        "redhat.vscode-yaml"
-    ]
-}
+# Step 6: List installed extensions
+print_header "Checking Installed Extensions"
+print_info "Currently installed VS Code extensions:"
+code --list-extensions | grep -E "(copilot|github)" || print_warning "No Copilot extensions found"
+
+# Step 7: Create a test file for Copilot
+print_header "Creating Test File"
+TEST_FILE="copilot-test.py"
+cat > "$TEST_FILE" << 'EOF'
+# Test file for GitHub Copilot
+# Type the comment below and press TAB to test Copilot
+
+# Function to calculate fibonacci numbers
+
+# Function to reverse a string
+
+# Function to check if a number is prime
+
+# Smart contract function to transfer tokens
 EOF
 
-print_success "VS Code configuration updated"
+print_status "Test file created: $TEST_FILE"
 
-# Step 4: Create Copilot test script
-print_step "Creating Copilot test script..."
-cat > test-copilot.py << 'EOF'
-#!/usr/bin/env python3
+# Step 8: Instructions for manual steps
+print_header "Manual Steps Required"
+echo
+print_info "Complete these steps manually:"
+echo "1. Reload VS Code window:"
+echo "   - Press Ctrl+Shift+P"
+echo "   - Type 'Developer: Reload Window'"
+echo "   - Press Enter"
+echo
+echo "2. Sign in to GitHub Copilot:"
+echo "   - Press Ctrl+Shift+P"
+echo "   - Type 'GitHub Copilot: Sign In'"
+echo "   - Follow the authentication flow"
+echo
+echo "3. Test Copilot:"
+echo "   - Open the file: $TEST_FILE"
+echo "   - Place cursor after any comment"
+echo "   - Press Tab to see suggestions"
+echo
+echo "4. Test Copilot Chat:"
+echo "   - Press Ctrl+Shift+P"
+echo "   - Type 'GitHub Copilot: Open Chat'"
+echo "   - Ask: 'How do I create a smart contract?'"
+echo
 
-"""
-Copilot Test Script
-Type the comment below and press TAB to test Copilot
-"""
-
-# Function to calculate the fibonacci sequence up to n terms
-
-# Class to represent a blockchain transaction
-
-# Function to validate an Ethereum address
-
-# Create a REST API endpoint using Flask
-
-# Function to parse JSON data from an API response
-
-print("🤖 Copilot Test Script Ready!")
-print("Open this file in VS Code and try typing comments followed by TAB")
-print("If Copilot is working, it should suggest code completions")
-EOF
-
-chmod +x test-copilot.py
-print_success "Copilot test script created"
-
-# Step 5: Create manual extension installer
-print_step "Creating manual extension installer..."
-cat > install-copilot-extensions.py << 'EOF'
-#!/usr/bin/env python3
-
-import subprocess
-import sys
-import time
-
-def run_command(cmd):
-    """Run a shell command and return success status"""
-    try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return result.returncode == 0, result.stdout, result.stderr
-    except Exception as e:
-        return False, "", str(e)
-
-def install_extension(extension_id):
-    """Install a VS Code extension"""
-    print(f"📦 Installing {extension_id}...")
-    cmd = f"code --install-extension {extension_id} --force"
-    success, stdout, stderr = run_command(cmd)
-    
-    if success:
-        print(f"✅ Successfully installed {extension_id}")
-        return True
-    else:
-        print(f"❌ Failed to install {extension_id}")
-        print(f"Error: {stderr}")
-        return False
-
-def main():
-    print("🤖 Manual Copilot Extension Installer")
-    print("=" * 50)
-    
-    extensions = [
-        "GitHub.copilot",
-        "GitHub.copilot-chat"
-    ]
-    
-    success_count = 0
-    
-    for ext in extensions:
-        if install_extension(ext):
-            success_count += 1
-        time.sleep(2)  # Wait between installations
-    
-    print(f"\n📊 Results: {success_count}/{len(extensions)} extensions installed")
-    
-    if success_count == len(extensions):
-        print("🎉 All extensions installed successfully!")
-        print("\n🔄 Please reload VS Code window:")
-        print("   Ctrl+Shift+P → 'Developer: Reload Window'")
-        print("\n🔑 Then sign in to Copilot:")
-        print("   Ctrl+Shift+P → 'GitHub Copilot: Sign In'")
-    else:
-        print("⚠️  Some extensions failed to install")
-        print("Try installing manually from VS Code Extensions panel")
-
-if __name__ == "__main__":
-    main()
-EOF
-
-chmod +x install-copilot-extensions.py
-print_success "Manual installer created"
-
-# Step 6: Create troubleshooting script
-print_step "Creating troubleshooting script..."
-cat > troubleshoot-copilot.sh << 'EOF'
+# Step 9: Create troubleshooting script
+print_header "Creating Troubleshooting Tools"
+cat > copilot-troubleshoot.sh << 'EOF'
 #!/bin/bash
 
-echo "🔧 GitHub Copilot Troubleshooting Script"
-echo "========================================"
+echo "🔍 GitHub Copilot Troubleshooting"
+echo "================================"
 
-echo ""
-echo "1. 📋 Checking extension installation..."
+# Check extensions
+echo "📦 Installed Extensions:"
 code --list-extensions | grep -i copilot
-if [ $? -eq 0 ]; then
-    echo "✅ Copilot extensions found"
+
+# Check settings
+echo
+echo "⚙️  VS Code Settings:"
+if [ -f "$HOME/.vscode-server/data/Machine/settings.json" ]; then
+    echo "✅ Settings file exists"
+    grep -A 5 -B 5 "copilot" "$HOME/.vscode-server/data/Machine/settings.json" || echo "❌ No copilot settings found"
 else
-    echo "❌ Copilot extensions not found"
-    echo "Run: ./install-copilot-extensions.py"
+    echo "❌ Settings file not found"
 fi
 
-echo ""
-echo "2. 🔐 Checking GitHub authentication..."
-gh auth status 2>/dev/null
-if [ $? -eq 0 ]; then
-    echo "✅ GitHub authentication active"
+# Check GitHub auth
+echo
+echo "🔐 GitHub Authentication:"
+if command -v gh &> /dev/null; then
+    gh auth status 2>&1 | head -5
 else
-    echo "❌ GitHub authentication issue"
-    echo "Run: gh auth login"
+    echo "❌ GitHub CLI not found"
 fi
 
-echo ""
-echo "3. 📁 Checking VS Code configuration..."
-if [ -f ".vscode/settings.json" ]; then
-    echo "✅ VS Code settings found"
-else
-    echo "❌ VS Code settings missing"
-    echo "Run: ./fix-copilot.sh"
-fi
+# Check VS Code processes
+echo
+echo "🔄 VS Code Processes:"
+ps aux | grep -E "(code|copilot)" | head -5
 
-echo ""
-echo "4. 🔄 Recommended fixes:"
-echo "   - Reload VS Code window: Ctrl+Shift+P → 'Developer: Reload Window'"
-echo "   - Sign in to Copilot: Ctrl+Shift+P → 'GitHub Copilot: Sign In'"
-echo "   - Check extension status in Extensions panel"
-
-echo ""
-echo "5. 🧪 Test Copilot:"
-echo "   - Open test-copilot.py"
-echo "   - Type a comment and press TAB"
-echo "   - Look for code suggestions"
-
-echo ""
-echo "If issues persist:"
-echo "   - Restart Codespace completely"
-echo "   - Check GitHub Copilot subscription status"
-echo "   - Try incognito/private browsing mode"
+echo
+echo "💡 Quick Fixes:"
+echo "- Restart VS Code: Ctrl+Shift+P > Developer: Reload Window"
+echo "- Sign in again: Ctrl+Shift+P > GitHub Copilot: Sign In"
+echo "- Check subscription: https://github.com/settings/copilot"
+echo "- Try incognito mode if browser issues"
 EOF
 
-chmod +x troubleshoot-copilot.sh
-print_success "Troubleshooting script created"
+chmod +x copilot-troubleshoot.sh
+print_status "Troubleshooting script created: copilot-troubleshoot.sh"
 
-# Step 7: Actually run the extension installation
-print_step "Running extension installation..."
-python3 install-copilot-extensions.py
-
-# Step 8: Final instructions
-echo ""
-echo -e "${GREEN}
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                         🎉 COPILOT FIX COMPLETE! 🎉                         ║
-║                                                                               ║
-║  Next Steps to Complete Setup:                                               ║
-║                                                                               ║
-║  1. 🔄 RELOAD VS CODE WINDOW:                                                ║
-║     Press: Ctrl+Shift+P                                                     ║
-║     Type: 'Developer: Reload Window'                                         ║
-║     Press: Enter                                                             ║
-║                                                                               ║
-║  2. 🔑 SIGN IN TO COPILOT:                                                   ║
-║     Press: Ctrl+Shift+P                                                     ║
-║     Type: 'GitHub Copilot: Sign In'                                         ║
-║     Follow the authentication flow                                           ║
-║                                                                               ║
-║  3. 🧪 TEST COPILOT:                                                         ║
-║     Open: test-copilot.py                                                    ║
-║     Type a comment + press TAB                                               ║
-║                                                                               ║
-║  4. 🚀 START YOUR APP:                                                       ║
-║     Run: ./quick-commands.sh start                                           ║
-║                                                                               ║
-║  📞 If still not working:                                                    ║
-║     Run: ./troubleshoot-copilot.sh                                           ║
-║                                                                               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-${NC}"
-
-print_success "🤖 Copilot fix script completed!"
-print_warning "Remember to RELOAD VS Code window and SIGN IN to Copilot!"
+# Final status
+echo
+echo "🎉 GitHub Copilot Fix Complete!"
+echo "==============================="
+echo
+print_status "✅ Extensions installed"
+print_status "✅ Settings configured"
+print_status "✅ Test file created"
+print_status "✅ Troubleshooting tools ready"
+echo
+print_warning "⚠️  Manual steps required (see above)"
+print_info "💡 Run ./copilot-troubleshoot.sh if issues persist"
+echo
+print_info "🚀 Now run: ./start-fast-dev.sh (for your main application)"
