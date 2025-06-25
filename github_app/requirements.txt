@@ -2,7 +2,7 @@
 
 # Core dependencies
 flask==2.3.3
-gunicorn==21.2.0
+gunicorn==23.0.0
 
 # GitHub integration
 PyGithub==1.59.1
@@ -17,7 +17,7 @@ transformers==4.33.2
 # Blockchain and crypto
 web3==6.10.0
 eth-abi==4.2.1
-requests==2.31.0
+requests==2.32.4
 
 # Database and storage
 sqlalchemy==2.0.21
